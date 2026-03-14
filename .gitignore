@@ -22,3 +22,39 @@
 ***REMOVED*** virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+***REMOVED*** === MAVEN ===
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+***REMOVED*** === INTELLIJ IDEA ===
+.idea/
+*.iml
+*.iws
+out/
+
+***REMOVED*** === ECLIPSE ===
+.settings/
+.project
+.classpath
+.factorypath
+
+***REMOVED*** === VS CODE ===
+.vscode/
+
+***REMOVED*** === MACOS ===
+.DS_Store
+.AppleDouble
+.LSOverride
+
+***REMOVED*** === OTHERS ===
+*.swp
+*~
