@@ -1,0 +1,40 @@
+/* Custom Input Styles */
+.custom-label {
+    font-weight: 500;
+    color: ***REMOVED***374151;
+    margin-bottom: 0.5rem;
+}
+
+.custom-input {
+    border: 1px solid ***REMOVED***d1d5db;
+    border-radius: 0.375rem;
+    padding: 0.625rem 0.875rem;
+    font-size: 1rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.custom-input:focus {
+    border-color: ***REMOVED***3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+    outline: none;
+}
+
+.custom-input:disabled {
+    background-color: ***REMOVED***f3f4f6;
+    color: ***REMOVED***9ca3af;
+    cursor: not-allowed;
+}
+
+.custom-input[readonly] {
+    background-color: ***REMOVED***f9fafb;
+    color: ***REMOVED***6b7280;
+}
+
+.custom-input::placeholder {
+    color: ***REMOVED***9ca3af;
+}
+
+/* Required field indicator */
+.text-danger {
+    color: ***REMOVED***ef4444;
+}
