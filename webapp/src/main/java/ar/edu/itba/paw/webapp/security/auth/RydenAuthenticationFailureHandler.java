@@ -1,4 +1,4 @@
-package ar.edu.itba.paw.webapp.security;
+package ar.edu.itba.paw.webapp.security.auth;
 
 import java.io.IOException;
 
@@ -11,8 +11,12 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
 
+import ar.edu.itba.paw.webapp.security.auth.exception.EmailNotValidatedException;
+import ar.edu.itba.paw.webapp.security.auth.exception.LegacyPasswordMailedException;
+import ar.edu.itba.paw.webapp.security.http.RegistrationSessionAttributes;
+
 @Component
-public class RydenAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
+public final class RydenAuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
     public RydenAuthenticationFailureHandler() {
         setDefaultFailureUrl("/login?error");

@@ -1,4 +1,4 @@
-package ar.edu.itba.paw.webapp.security;
+package ar.edu.itba.paw.webapp.security.auth.userdetails;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import ar.edu.itba.paw.models.domain.User;
 import ar.edu.itba.paw.services.UserService;
 
-public class RydenUserDetailsService implements UserDetailsService {
+public final class RydenUserDetailsService implements UserDetailsService {
 
     private final UserService userService;
 

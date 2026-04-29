@@ -1,4 +1,4 @@
-package ar.edu.itba.paw.webapp.security;
+package ar.edu.itba.paw.webapp.security.access;
 
 import java.util.OptionalLong;
 import java.util.function.Supplier;
@@ -13,12 +13,14 @@ import org.springframework.security.web.access.intercept.RequestAuthorizationCon
 import org.springframework.stereotype.Component;
 
 import ar.edu.itba.paw.services.ListingService;
+import ar.edu.itba.paw.webapp.security.auth.userdetails.RydenUserDetails;
+import ar.edu.itba.paw.webapp.security.http.HttpRequestPathIds;
 
 /**
  * Authorization helpers for {@code /my-listings/**} (used with {@link AuthorizationManager} in security config).
  */
 @Component("listingWebAuth")
-public class ListingWebAuthorization {
+public final class ListingWebAuthorization {
 
     private final ListingService listingService;
 

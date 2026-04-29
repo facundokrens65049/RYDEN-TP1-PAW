@@ -1,11 +1,10 @@
-package ar.edu.itba.paw.webapp.security;
+package ar.edu.itba.paw.webapp.security.auth;
 
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
@@ -16,14 +15,15 @@ import org.springframework.stereotype.Component;
 
 import ar.edu.itba.paw.models.domain.User;
 import ar.edu.itba.paw.services.UserService;
+import ar.edu.itba.paw.webapp.security.auth.userdetails.RydenUserDetails;
+import ar.edu.itba.paw.webapp.security.auth.userdetails.UserRoleAuthorities;
 
 @Component
-public class SessionLoginService {
+public final class SessionLoginService {
 
     private final UserService userService;
     private final SecurityContextRepository securityContextRepository;
 
-    @Autowired
     public SessionLoginService(
             final UserService userService,
             final SecurityContextRepository securityContextRepository) {

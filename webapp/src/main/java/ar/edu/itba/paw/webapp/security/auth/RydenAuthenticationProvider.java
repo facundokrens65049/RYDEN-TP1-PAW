@@ -1,9 +1,8 @@
-package ar.edu.itba.paw.webapp.security;
+package ar.edu.itba.paw.webapp.security.auth;
 
 import java.util.List;
 import java.util.Locale;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -16,14 +15,17 @@ import org.springframework.stereotype.Component;
 
 import ar.edu.itba.paw.models.domain.User;
 import ar.edu.itba.paw.services.UserService;
+import ar.edu.itba.paw.webapp.security.auth.exception.EmailNotValidatedException;
+import ar.edu.itba.paw.webapp.security.auth.exception.LegacyPasswordMailedException;
+import ar.edu.itba.paw.webapp.security.auth.userdetails.RydenUserDetails;
+import ar.edu.itba.paw.webapp.security.auth.userdetails.UserRoleAuthorities;
 
 @Component
-public class RydenAuthenticationProvider implements AuthenticationProvider {
+public final class RydenAuthenticationProvider implements AuthenticationProvider {
 
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
 
-    @Autowired
     public RydenAuthenticationProvider(
             final UserService userService,
             final PasswordEncoder passwordEncoder) {

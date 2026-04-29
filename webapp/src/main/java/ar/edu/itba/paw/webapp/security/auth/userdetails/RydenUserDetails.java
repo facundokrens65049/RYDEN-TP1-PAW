@@ -1,4 +1,4 @@
-package ar.edu.itba.paw.webapp.security;
+package ar.edu.itba.paw.webapp.security.auth.userdetails;
 
 import java.util.Collection;
 import java.util.Objects;

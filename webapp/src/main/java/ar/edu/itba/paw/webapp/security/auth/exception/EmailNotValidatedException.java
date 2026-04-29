@@ -1,4 +1,4 @@
-package ar.edu.itba.paw.webapp.security;
+package ar.edu.itba.paw.webapp.security.auth.exception;
 
 import org.springframework.security.core.AuthenticationException;
 
