@@ -1,0 +1,16 @@
+***REMOVED*** Copy to application-deployed.properties in this directory (gitignored). Used by default (no "local" profile;
+***REMOVED*** e.g. Tomcat on Pampero without -D, or if you do not set spring.profiles.active=local). Merged secrets + DB.
+
+***REMOVED*** PostgreSQL (example host; set real values on the server)
+spring.datasource.url=***REMOVED***
+spring.datasource.username=***REMOVED***
+spring.datasource.password=***REMOVED***
+
+***REMOVED*** Public base URL for email CTAs (Pampero / production origin, no trailing slash)
+mail.app.base.url=***REMOVED***
+
+***REMOVED*** Spring Security remember-me (use a long random secret in production)
+app.security.remember-me.key=***REMOVED***
+
+***REMOVED*** Gmail / SMTP app password
+mail.server.password=***REMOVED***

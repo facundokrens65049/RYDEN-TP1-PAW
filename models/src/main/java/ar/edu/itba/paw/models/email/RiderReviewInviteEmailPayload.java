@@ -43,7 +43,7 @@ public final class RiderReviewInviteEmailPayload {
         return vehicleLabel;
     }
 
-    /** Absolute-path fragment including hash, e.g. {@code /my-reservations/12***REMOVED***rider-review-owner}. */
+    /** Path from context root for the mail CTA, e.g. {@code /my-reservations/12?role=rider***REMOVED***rider-review-owner}. */
     public String getReviewSectionPath() {
         return reviewSectionPath;
     }
