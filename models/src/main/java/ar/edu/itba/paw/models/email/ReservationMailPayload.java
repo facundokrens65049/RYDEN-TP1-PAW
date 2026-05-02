@@ -7,7 +7,6 @@ import java.util.Objects;
 /**
  * Shared mail data for reservation lifecycle emails (confirmation, reminder, payment proof, listing deletion rider
  * parts, etc.). Rider-facing locale is {@link ***REMOVED***getMessageLocale()}; owner-facing is {@link ***REMOVED***getOwnerMailLocale()}.
- * <p>
  * Cancellation intro copy uses {@link ReservationCancellationEmailPayload}.
  */
 public final class ReservationMailPayload {
