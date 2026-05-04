@@ -1,162 +1,199 @@
-***REMOVED*** Project Overview
+***REMOVED*** Repository guidance
 
-This is a Java web application based on **Spring Framework 5.3**, organized as a multi-module **Maven** project. It uses a classic layered architecture with separated contracts and implementations.
+**`CLAUDE.md`** and **`agents.md`** are identical: guidance for Claude Code, Cursor, and other coding agents.
 
-***REMOVED******REMOVED*** Architecture
+***REMOVED******REMOVED*** Commands
 
-The project is divided into the following modules:
+```bash
+***REMOVED*** Build all modules
+mvn clean install
 
-- **models**: Domain entities, DTOs for services and mail templates, immutable search criteria (`ListingSearchCriteria`, `ReservationSearchCriteria`, `OwnerListingSearchCriteria`), and shared utilities (e.g. wall-clock parsing, `AvailabilityPeriod` with `America/Argentina/Buenos_Aires`).
-- **persistence-contracts**: DAO interfaces.
-- **persistence**: JDBC implementations using `JdbcTemplate`.
-- **service-contracts**: Service interfaces, shared exceptions, and `MessageKeys` for i18n codes.
-- **services**: Service implementations (business logic, email, async mail task).
-- **webapp**: Spring MVC controllers, JSP views, static assets, `application/application.properties`, and mail Thymeleaf templates under `classpath:mail/`.
+***REMOVED*** Run the web application
+mvn jetty:run -pl webapp
 
-***REMOVED******REMOVED*** Technologies
+***REMOVED*** Run all tests
+mvn test
 
-- **Backend**: Java 21, Spring 5.3 (MVC, JDBC, Context, TX, Context Support for mail), Spring Security 5.7.14.
-- **Database**: PostgreSQL (runtime), HSQLDB (DAO / persistence tests). Schema managed via **Flyway** (`V2__`, `V3__` migrations under `classpath:db/migration`).
-- **Web UI**: JSP (`webapp/src/main/webapp/WEB-INF/views/`), Spring form tags, custom JSP tags under `WEB-INF/tags/`.
-- **Client scripts**: Shared JS in `webapp/src/main/webapp/js/` (e.g. **Flatpickr** for date/range pickers, loaded from CDN in `header.jsp` / `footer.jsp`).
-- **Email**: JavaMail, **Thymeleaf** HTML templates (`webapp/src/main/resources/mail/html/`), separate `ResourceBundleMessageSource` for mail copy (`mail/MailMessages` + locale variants).
-- **Build**: Maven.
-- **Runtime server**: Jetty (`jetty-maven-plugin` on the `webapp` module).
+***REMOVED*** Run tests for a specific module
+mvn test -pl persistence
 
-***REMOVED******REMOVED*** Building and Running
+***REMOVED*** Run a single test class
+mvn test -pl persistence -Dtest=ListingJdbcDaoTest
+```
+
+The app is served at `http://localhost:8080/` with context path **`/webapp`** (see `application/application.properties`), so routes look like `http://localhost:8080/webapp/home`.
+
+***REMOVED******REMOVED*** Building and running
 
 ***REMOVED******REMOVED******REMOVED*** Prerequisites
 
 - Java 21
 - Maven
-- PostgreSQL reachable with credentials defined in **`webapp/src/main/resources/application.properties`** (`spring.datasource.url`, `spring.datasource.username`, `spring.datasource.password`). Optional overrides: `application-${spring.profiles.active}.properties` (see `@PropertySources` in `WebConfig`). Local development: use `application-local.properties` for a local PostgreSQL instance.
+- PostgreSQL reachable with credentials in **`webapp/src/main/resources/application/application.properties`** (`spring.datasource.url`, `spring.datasource.username`, `spring.datasource.password`). Optional overrides: `application-${spring.profiles.active}.properties` (see `@PropertySources` in `WebConfig`). Local development: use `application-local.properties` for a local PostgreSQL instance.
 
 ***REMOVED******REMOVED******REMOVED*** Key commands
 
-**Build the entire project:**
-
 ```text
 mvn clean install
-```
-
-**Run the web application:**
-
-```text
 mvn jetty:run -pl webapp
-```
-
-Base URL depends on `server.port` and `server.servlet.context-path` in `application.properties` (if `context-path` is set, prefix all paths accordingly).
-
-**Run tests:**
-
-```text
 mvn test
 ```
 
+Base URL depends on `server.port` and `server.servlet.context-path` in `application.properties`.
+
+***REMOVED******REMOVED*** Architecture
+
+This is a **car rental platform**: a Java web app on **Spring Framework 5.3**, multi-module **Maven**, strict layer separation.
+
+***REMOVED******REMOVED******REMOVED*** Module dependency chain
+
+```
+webapp → services → persistence → models
+              ↑            ↑
+   service-contracts  persistence-contracts
+```
+
+***REMOVED******REMOVED******REMOVED*** Module responsibilities
+
+- **models** — Domain POJOs (`Car`, `User`, `Listing`, `Reservation`, `Image`, `CarPicture`), DTOs such as `ListingCard` / `ListingDetail`, immutable search criteria (`ListingSearchCriteria`, `ReservationSearchCriteria`, `OwnerListingSearchCriteria`), shared utilities (wall-clock parsing, `AvailabilityPeriod` with `America/Argentina/Buenos_Aires`).
+- **persistence-contracts** — DAO interfaces.
+- **persistence** — JDBC with `JdbcTemplate` / `NamedParameterJdbcTemplate`, inline SQL. DAO tests run against HSQLDB.
+- **service-contracts** — Service interfaces, shared exceptions, `MessageKeys` for i18n codes.
+- **services** — Business logic, email, async mail tasks.
+- **webapp** — Spring MVC controllers, JSPs, `application/application.properties`, static assets, Thymeleaf mail under `classpath:mail/`.
+
+***REMOVED******REMOVED******REMOVED*** Key conventions
+
+- **Dependency injection**: Constructor injection with `@Autowired`.
+- **Persistence**: Plain SQL via `JdbcTemplate` / named parameters where used. No ORM. `RowMapper` as inline or private static fields.
+- **Configuration**: Java `@Configuration` (`WebConfig`, `SpringMailConfig`, `WebAuthConfig`, `ValidationWebConfig`) plus `web.xml` for servlet bootstrap. Properties from `application.properties`; profile overrides from `application-{profile}.properties` if present.
+- **Dependency versions**: Root `pom.xml` `<dependencyManagement>`; child POMs omit versions where managed.
+- **Views**: JSPs in `webapp/src/main/webapp/WEB-INF/views/`, tags in `WEB-INF/tags/`, assets under `css/`, `js/`, `assets/`.
+- **Component scan** (`WebConfig`): `ar.edu.itba.paw.webapp.controller`, `.advice`, `.exception`, `.util`, `.support`, `.security`, `.validation`, `.interceptor`, plus `ar.edu.itba.paw.services` and `ar.edu.itba.paw.persistence`. `webapp.form` and `webapp.dto` are not scanned; `CurrentUserArgumentResolver` in `webapp.support` is registered on the MVC adapter. Servlet listeners (e.g. `webapp.listener`) are declared in `WEB-INF/web.xml`.
+
+***REMOVED******REMOVED******REMOVED*** Domain overview
+
+A `User` owns `Car`s. A `Car` can have a `Listing` with price and availability (`listing_availability`). Other users create `Reservation`s. `Image`s are stored as byte arrays and linked via `CarPicture`.
+
+Key enums (on model classes): `Car.Type`, `Car.Powertrain`, `Car.Transmission`, `Listing.Status` (active/paused/finished), `Reservation.Status` (e.g. pending, accepted, started, cancelled, finished — see code for full set).
+
+***REMOVED******REMOVED*** Technologies
+
+- **Backend**: Java 21, Spring 5.3 (MVC, JDBC, Context, TX, Context Support for mail), Spring Security 5.7.14.
+- **Database**: PostgreSQL (runtime), HSQLDB (DAO / persistence tests). Schema: `schema.sql` + **Flyway** (`V2__`, `V3__`, … under `classpath:db/migration/`).
+- **Web UI**: JSP, Spring form tags, custom JSP tags under `WEB-INF/tags/`.
+- **Client scripts**: Shared JS in `webapp/src/main/webapp/js/` (e.g. **Flatpickr** for date/range pickers, CDN in `header.jsp` / `footer.jsp`).
+- **Email**: JavaMail, **Thymeleaf** HTML (`webapp/src/main/resources/mail/html/`), separate `ResourceBundleMessageSource` for mail copy (`mail/MailMessages` + locale variants).
+- **Build**: Maven. **Runtime**: Jetty (`jetty-maven-plugin` on the `webapp` module).
+
+***REMOVED******REMOVED*** Database
+
+Credentials live in `webapp/src/main/resources/application/application.properties`. The schema is applied on startup from `persistence/src/main/resources/schema.sql` via `DataSourceInitializer` in `WebConfig`. Tables use `CREATE TABLE IF NOT EXISTS`, so bootstrap is safe to re-run.
+
+Tests use **in-memory HSQLDB** per module `TestConfiguration` / `TestPersistenceConfig` — no PostgreSQL required for tests.
+
+***REMOVED******REMOVED******REMOVED*** Flyway migrations
+
+Bootstrap runs first (`schema.sql`), then Flyway from `classpath:db/migration/` (`webapp/src/main/resources/db/migration/`). In `WebConfig`: `baselineOnMigrate(true)`, `baselineVersion("1")`, `failOnMissingLocations(true)`.
+
+New migrations: `V<number>__<description>.sql` (e.g. `V4__add_reviews.sql`). Examples: `V2__users_extend_profile_and_auth.sql`, `V3__email_verification_codes.sql`.
+
 ***REMOVED******REMOVED*** Internationalization (i18n)
 
-- **UI and errors**: `ReloadableResourceBundleMessageSource` with basenames `classpath:messages` and `classpath:exception-messages`. Default bundle is **English**; Spanish uses `messages_es.properties` and `exception-messages_es.properties`.
-- **Locale resolution**: `AcceptHeaderLocaleResolver` in `WebConfig` — uses the browser **`Accept-Language`**; supported locales **English** and **Spanish (`es`)**; default **English** if no match.
-- **`LocaleMessages`** (`webapp.util`): resolves exception / key messages via `MessageSource` and `LocaleContextHolder`.
-- **Mail**: Separate bundle `mail/MailMessages.properties` (English default) and `mail/MailMessages_es.properties`. Reservation confirmation emails use the request locale captured on the **synchronous** thread (see `ReservationConfirmationPayload***REMOVED***getMessageLocale`) because `@Async` mail work does not inherit `LocaleContextHolder`.
+- **UI/errors**: `ReloadableResourceBundleMessageSource` with `classpath:messages` and `classpath:exception-messages`. Default **English**; Spanish: `messages_es.properties`, `exception-messages_es.properties`.
+- **Locale**: `AcceptHeaderLocaleResolver` in `WebConfig` — `Accept-Language`; supported **English** and **Spanish (`es`)**; defaults to English.
+- **`LocaleMessages`** (`webapp.util`): resolves keys via `MessageSource` + `LocaleContextHolder`.
+- **Mail**: `mail/MailMessages.properties` and `mail/MailMessages_es.properties`. `@Async` mail must not rely on `LocaleContextHolder` — capture locale on the request thread (e.g. `ReservationConfirmationPayload***REMOVED***getMessageLocale`).
+- **Exception keys**: `exception-messages.properties`, aligned with `ar.edu.itba.paw.exception.MessageKeys`.
 
 ***REMOVED******REMOVED*** Email
 
 - Configured in `SpringMailConfig` (`mail/emailconfig.properties`, `mail/javamail.properties`).
-- HTML templates reference message keys such as `mail.reservationConfirmation.*`.
+- HTML templates use keys such as `mail.reservationConfirmation.*`.
 - Async sending uses `mailTaskExecutor` from `WebConfig`.
+
+***REMOVED******REMOVED*** Security
+
+Configured in **`WebAuthConfig`**: Spring Security 5.7.14, `@EnableWebSecurity`, `SecurityFilterChain`, `RydenAuthenticationProvider`, `RydenUserDetailsService`. Remember-me, session auth, CSRF. **Do not** add or replace auth configuration outside `WebAuthConfig`.
 
 ***REMOVED******REMOVED*** Dates and business rules (high level)
 
-- Listing availability and reservation form datetimes are interpreted in the **wall zone** `AvailabilityPeriod.WALL_ZONE` (Argentina) when parsing/normalizing server-side.
-- **Publishing**: availability periods must have a valid date order; the **start** of each period must not be before **today** in that zone (see `ListingServiceImpl`).
-- **Reserving**: pickup (wall calendar day) must not be before **today** in that zone; interval must still fit published availability (see `ReservationServiceImpl`).
-- **Flatpickr**: range/single pickers default to **`minDate: 'today'`** in `components.js` so past calendar days are not selectable in the browser (complements server validation).
+- Listing availability and reservation datetimes use wall zone `AvailabilityPeriod.WALL_ZONE` (Argentina) when parsing server-side.
+- **Publishing**: valid date order; period start not before **today** in that zone (`ListingServiceImpl`).
+- **Reserving**: pickup day not before **today**; interval must fit published availability (`ReservationServiceImpl`).
+- **Flatpickr**: `minDate: 'today'` in `components.js` complements server validation.
 
 ***REMOVED******REMOVED*** Development conventions
 
 ***REMOVED******REMOVED******REMOVED*** Coding style
 
-- **Dependency injection**: Constructor injection with Spring `@Autowired` (as used in existing services/config).
-- **Service ↔ persistence**: Each service implementation injects only its own DAO (e.g. `ListingServiceImpl` → `ListingDao`, `PasswordResetServiceImpl` → `PasswordResetCodeDao`, `ReviewServiceImpl` → `ReviewDao`, `CarServiceImpl` → `CarDao`). Cross-aggregate persistence goes through peer services (`UserService`, `ReservationService`, `CarService`, `ListingAvailabilityService`, …). When two services need each other, use `@Lazy` on one constructor parameter to avoid a Spring cycle.
-- **Scheduling** (`services/.../scheduling`): `@Scheduled` beans call service APIs; do not inject DAOs into schedulers so reads and rules stay inside `*ServiceImpl`.
-- **Configuration**: Java `@Configuration` (`WebConfig`, `SpringMailConfig`, `WebAuthConfig`, `ValidationWebConfig`) plus `web.xml` for servlet bootstrap.
-- **Security**: Configured in `WebAuthConfig` with Spring Security 5.7.14. Uses `@EnableWebSecurity`, `SecurityFilterChain`, custom `RydenAuthenticationProvider` and `RydenUserDetailsService`. Remember-me support, session-based auth, CSRF protection.
-- **Validation**: `ValidationWebConfig` implements `WebMvcConfigurer` to inject `LocalValidatorFactoryBean` as the MVC validator. Bean validation and Spring form validation combined.
-- **Javadoc**: Public contracts in `service-contracts` and `persistence-contracts` are in **English**. Avoid HTML paragraph tags (`<p>` / `</p>`); split ideas with extra `*` lines or `{@code …}` / `{@link …}` where useful. Spring MVC controllers under `webapp/.../controller` use a short **English** class-level summary before `@Controller` where it helps navigation.
+- **DI**: Constructor `@Autowired` as in existing code.
+- **Service ↔ persistence**: Each `*ServiceImpl` injects its own DAOs. Cross-aggregate access goes through peer services (`UserService`, `ReservationService`, …). Use `@Lazy` on one constructor param when two services need each other to break cycles.
+- **Scheduling** (`services/.../scheduling`): `@Scheduled` beans call services only, not DAOs.
+- **Validation**: `ValidationWebConfig` registers `LocalValidatorFactoryBean` as the MVC validator.
+- **Javadoc**: Public contracts in `*-contracts` in **English**. Avoid HTML `<p>` in Javadoc; use extra `*` lines or `{@code}` / `{@link}`. Controllers: short **English** class summary where it helps.
 
-***REMOVED******REMOVED******REMOVED*** Quality & security checklist (recurring audit)
+***REMOVED******REMOVED******REMOVED*** Quality and security (recurring audit)
 
-- **Spring stack**: Framework **5.3.x** and **Spring Security 5.7.x** versions live in the root `pom.xml` properties (`spring.version`, `spring-security.version`); module POMs inherit versions via `dependencyManagement`.
-- **Controllers**: Orchestrate only — call **services**, not **persistence**. Do not embed **business rules** or **mail orchestration** (no direct `JavaMailSender` / template sends; use `*Service` APIs). Prefer **constructor injection** and the smallest visibility for collaborators.
-- **Exceptions & UX**: Map domain failures to **`RydenException`** + message keys; generic **`UnhandledExceptionHandler`** must not put raw `Throwable***REMOVED***getMessage()` on the page (use i18n keys; escape any dynamic copy with JSTL `c:out` when shown).
-- **SQL injection**: DAOs use **`JdbcTemplate`** with **`?`** parameters; avoid string-concatenated user input in SQL.
-- **Logging**: Production uses `logback/logback-prod.xml` (**INFO+** for `ar.edu.itba.paw`); local profile may load `logback-local.xml` (**DEBUG** for app packages). Use **SLF4J** parameterized levels (`info` / `warn` / `error`; `debug` where diagnosis needs it locally).
-- **Tests**: Prefer **arrange / exercise / assert**; assert **contract outcomes**, not wiring. **No `Mockito.verify`** (or equivalent call-count tricks). Skip tests that only mirror a one-line delegate with no behavior.
-- **Effective Java–style**: **`final`** where subclasses are not required; **non-instantiable** utility classes (`private` constructor); **immutable** DTOs/criteria where practical; avoid magic numbers in business code — read limits and tuning from **`application.properties`** (with small JVM fallbacks only where documented, e.g. `PaginationFallbackSizes`).
-- **Comments**: Source comments and public API docs in **English** only; remove chatty or obsolete notes.
+- **Spring versions**: Root `pom.xml` (`spring.version`, `spring-security.version`).
+- **Controllers**: Call **services** only, not DAOs. No embedded business rules or direct mail sends; use service APIs. Prefer constructor injection and minimal visibility.
+- **Exceptions & UX**: Domain failures → `RydenException` + message keys; `UnhandledExceptionHandler` must not expose raw `Throwable***REMOVED***getMessage()` (i18n keys; escape dynamic text with JSTL `c:out` when shown).
+- **SQL**: Parameterized SQL (`?` or named params); never concatenate user input into SQL.
+- **Logging**: Production `logback/logback-prod.xml` (typically **INFO+** for `ar.edu.itba.paw`); local may use `logback-local.xml` with **DEBUG**. Use **SLF4J** with parameterized messages; prefer **DEBUG** (optionally SLF4J 2 **fluent** `atDebug().setMessage(...).addArgument(...).setCause(...).log()`) for swallowed parse/IO fallbacks where you still need traceability.
+- **Tests**: Arrange / exercise / assert outcomes, not wiring. **No `Mockito.verify`** (or call-count tricks). Skip tests that only mirror a one-line delegate.
+- **Style**: `final` where appropriate, private constructors on utility classes, immutable DTOs/criteria where practical; avoid magic numbers — read limits from `application.properties` (documented JVM fallbacks only where needed, e.g. `PaginationFallbackSizes`).
+- **Comments**: English only; remove obsolete chatty notes.
 
 ***REMOVED******REMOVED******REMOVED*** Dependency management
 
-- **Centralized versions**: Maven properties and `<dependencyManagement>` in the root `pom.xml`.
-- **Module POMs**: External dependencies without repeating versions where managed by the parent.
-- **Internal modules**: Use `${project.version}` for sibling artifacts.
+- Versions in root `pom.xml` `<dependencyManagement>`; module POMs omit repeated versions.
+- Internal modules: `${project.version}` for siblings.
 
 ***REMOVED******REMOVED******REMOVED*** Testing
 
-- **Test method naming**: Every `@Test` method must follow **`testFunctionName`**: a single camelCase identifier that **starts with `test`** and continues with a descriptive name (examples: `testSendConfirmationUsesCapturedLocale()`, `testCreateFailsWhenPaused()`). Avoid `should…`, Given/When/Then prose names, snake_case, or omitting the **`test`** prefix.
-- **Unit tests**: JUnit 5 and Mockito (`services`, `models`).
-- **Persistence tests**: HSQLDB (`TestPersistenceConfig`, DAO integration-style tests under `persistence/src/test`).
-- **DAO integration tests (`*JdbcDaoTest`, `DaoIntegrationTestSupport`)**: After exercising a **write** on the DAO under test (`create*`, `update*`, `delete*`), assert persisted state with **`JdbcTemplate`** (injected on the support class) or **`insert*`** / raw SQL in arrange — **do not** verify the write by calling a **second method on the same DAO** (e.g. `createCar` then `getCarById`). Prefer SQL fixtures for arrange when the goal is to test updates or deletes, so setup does not go through unrelated create methods on that DAO. For **read** methods with SQL fixtures, one DAO call is fine; when the contract is **ordering**, consider aligning assertions with an explicit `ORDER BY` query via `JdbcTemplate` as ground truth.
-- **Contract over implementation**: Tests assert **observable outcomes** (return values, `ModelAndView` / HTTP, domain state via test doubles or integration tests). **Do not** use `Mockito.verify`, `verifyNoInteractions`, `verifyNoMoreInteractions`, `never()`, `times()`, `InOrder`, or argument captors to assert that collaborators were called — that couples tests to internal wiring.
-- **No `verify` emulation**: Do not emulate interaction verification with counters, call-collector lists, or stubs whose only purpose is asserting call count/order. If a test uses helpers such as `doAnswer`, assertions must target contract-level data/effects (e.g., produced payload/content), not mock wiring.
-- **Service tests**: Mock DAOs and collaborators only to supply behavior; avoid `Mockito.anyLong()` (and similar) as **assigned values** — use fixed literals inside `when(...)`.
-- **Strict Mockito**: Remove unused stubbings or they fail with `UnnecessaryStubbingException`.
+- **Test method names**: **`testFunctionName`** — camelCase, must **start with `test`**, then descriptive tail (e.g. `testRegistersUser()`). No `should…`, BDD prose, snake_case, or names without the **`test`** prefix.
+- **Unit tests**: JUnit 5 + Mockito (`services`, `models`).
+- **Persistence**: HSQLDB, DAO-style tests under `persistence/src/test`.
+- **DAO integration tests** (`*JdbcDaoTest`, `DaoIntegrationTestSupport`): After a **write** (`create*`, `update*`, `delete*`), assert with **`JdbcTemplate`** or SQL in arrange — **never** verify only via another method on the **same** DAO (e.g. `createCar` + `getCarById`). For ordered reads with fixtures, optional ground-truth `ORDER BY` via `JdbcTemplate`.
+- **No interaction verification**: No `verify`, `verifyNoInteractions`, `never()`, `times()`, `InOrder`, captors for call wiring.
+- **Do not emulate verify**: No counters or collector lists whose sole purpose is call counts.
+- **Matchers**: Do not use `Mockito.anyLong()` (or `any*()`) as the **value** inside `when(...)` — use fixed literals.
+- **Strict Mockito**: Remove unused stubbings (`UnnecessaryStubbingException`).
 
 ***REMOVED******REMOVED******REMOVED*** Message keys
 
-- Domain / validation strings for exceptions: **`exception-messages.properties`** (and `_es`), keyed consistently with **`ar.edu.itba.paw.exception.MessageKeys`**.
+Domain / validation exception copy: **`exception-messages.properties`** (+ `_es`), consistent with **`MessageKeys`**.
 
 ***REMOVED******REMOVED******REMOVED*** Application properties
 
-- **Main config**: `webapp/src/main/resources/application/application.properties` (loaded via `@PropertySource` on `WebConfig`) defines server port, context path (`/webapp`), upload limits, validation rules, pagination, reservation timing, and **`app.scheduler.*`** cron/zone keys for background jobs (listing exhaustion, payment-proof sweep and reminders, reservation pickup reminder, return/review mail batches).
-- **Profile-specific**: `application/application-local.properties` or `application/application-deployed.properties` (see examples in the same folder) supply JDBC credentials and secrets; not committed.
-- **Mail config**: `mail/emailconfig.properties` and `mail/javamail.properties` under `webapp/src/main/resources/mail/`.
-
-***REMOVED******REMOVED******REMOVED*** Flyway database migrations
-
-- **Location**: `classpath:db/migration/` (under `webapp/src/main/resources/db/migration/`).
-- **Schema bootstrap**: `schema.sql` loaded first via `DataSourceInitializer`, then Flyway migrations applied.
-- **Flyway config** (in `WebConfig.java`): `baselineOnMigrate(true)`, `baselineVersion("1")`, `failOnMissingLocations(true)`.
-- **Existing migrations**: `V2__users_extend_profile_and_auth.sql`, `V3__email_verification_codes.sql`.
-- **Note**: New migrations should follow naming convention `V<number>__<description>.sql`.
+- **Main**: `webapp/src/main/resources/application/application.properties` — port, context path (`/webapp`), uploads, validation, pagination, reservation timing, `app.scheduler.*` crons/zones.
+- **Profiles**: `application-local.properties`, `application-deployed.properties` (examples in folder); secrets not committed.
+- **Mail**: `mail/emailconfig.properties`, `mail/javamail.properties` under `webapp/src/main/resources/mail/`.
 
 ***REMOVED******REMOVED******REMOVED*** Directory structure (per module)
 
-- `src/main/java`: Java sources.
-- `src/main/resources`: Config, SQL, i18n bundles, mail templates.
-- `src/test/java`: Tests.
+- `src/main/java`, `src/main/resources`, `src/test/java` as usual.
 - `webapp/src/main/webapp`: JSPs, CSS, JS, `WEB-INF/web.xml`.
-- **webapp component scan** (`WebConfig`): `controller`, `advice`, `util`, `security`, `validation`, `interceptor`, plus `ar.edu.itba.paw.services` and `ar.edu.itba.paw.persistence`. `webapp.form` and `webapp.dto` hold MVC backing beans and view models (not scanned). `CurrentUserArgumentResolver` in `webapp.support` is registered programmatically on the MVC adapter. Servlet listeners under `webapp.listener` are declared in `WEB-INF/web.xml`.
 
-***REMOVED******REMOVED******REMOVED*** Key services and DAOs
+***REMOVED******REMOVED******REMOVED*** Key services and DAOs (orientation)
 
-- **User**: `UserService` / `UserDao` — authentication, registration, profile management.
-- **Car & Listing**: `CarService` / `CarDao`, `ListingService` / `ListingDao` — rental inventory.
-- **Reservation**: `ReservationService` / `ReservationDao` — reservation management.
-- **Email & verification**: `EmailService`, `EmailVerificationService` / `EmailVerificationCodeDao`, `PasswordResetService` / `PasswordResetCodeDao` — password reset flows, async email sending.
-- **Image & picture**: `ImageService` / `ImageDao`, `CarPictureService` / `CarPictureDao` — image uploads and associations.
-- **Session listener**: `PublishCarStashSessionListener` (in `webapp/src/main/java/ar/edu/itba/paw/webapp/listener/`) manages session state for car publish forms.
+- **User**: `UserService` / `UserDao`.
+- **Car & listing**: `CarService` / `CarDao`, `ListingService` / `ListingDao`.
+- **Reservation**: `ReservationService` / `ReservationDao`.
+- **Email & verification**: `EmailService`, `EmailVerificationService`, `PasswordResetService` and related DAOs.
+- **Images**: `ImageService` / `ImageDao`, `CarPictureService` / `CarPictureDao`.
+- **Session**: e.g. `PublishCarStashSessionListener` for publish-form stash cleanup.
 
 ***REMOVED******REMOVED*** Logging
 
-Use SLF4J (never Log4j or `java.util.logging`). Declare the logger as:
+Use SLF4J (not Log4j or `java.util.logging`):
 
 ```java
 private static final Logger LOGGER = LoggerFactory.getLogger(ClassName.class);
 ```
 
-Always use parameterized logging to avoid string construction overhead:
+Use **parameterized** logging:
+
 ```java
 LOGGER.debug("Creating user with email {}", email); // correct
 LOGGER.debug("Creating user with email " + email);  // wrong
@@ -164,20 +201,19 @@ LOGGER.debug("Creating user with email " + email);  // wrong
 
 ***REMOVED******REMOVED*** Transactions
 
-All service methods must be annotated with `@Transactional` (import: `org.springframework.transaction.annotation.Transactional`). 
-Read-only methods must use `@Transactional(readOnly = true)` — this is also a hint for DB connection pool routing (primary/replica).
+All service methods need `@Transactional` (`org.springframework.transaction.annotation.Transactional`). Read-only methods: `@Transactional(readOnly = true)` (pool hint for primary/replica).
 
-**Critical proxy limitation**: `@Transactional` is applied via Spring proxy. Internal calls within the same class (e.g. `this.someMethod()`) bypass the proxy and will NOT be transactional, even if annotated. Only public interface methods get the transactional behavior. Annotate every method individually rather than relying on class-level annotations plus internal delegation.
+**Proxy limitation**: Internal `this.someMethod()` calls skip the proxy and ignore `@Transactional`. Only external calls through the proxy apply. Annotate public service methods individually; do not rely on class-level + internal delegation.
 
 ***REMOVED******REMOVED******REMOVED*** PR checks (transactionality)
 
-- `services/src/main/java/.../*ServiceImpl.java`: every public method must have explicit `@Transactional`.
-- Pure reads or normalization/build helpers that only read data must use `@Transactional(readOnly = true)`.
-- Writes, state changes, and side effects (including mail dispatch orchestration) must use `@Transactional` without `readOnly = true`.
-- Private helpers are not transactional entry points; the rule applies to public service methods.
-- If a method in a `*ServiceImpl` is intentionally left without `@Transactional`, the PR must justify that exception explicitly.
+- Every **public** method in `services/.../*ServiceImpl.java` must have explicit `@Transactional`.
+- Pure reads / normalization: `readOnly = true`.
+- Writes, side effects, mail orchestration: `@Transactional` without `readOnly = true`.
+- Private helpers are not transactional entry points.
+- Any public method **without** `@Transactional` needs an explicit PR justification.
 
-Quick reviewer checks:
+Quick checks:
 
 ```text
 rg "public .*\\(" services/src/main/java/ar/edu/itba/paw/services | rg "ServiceImpl"
@@ -188,16 +224,13 @@ rg "this\\.[a-zA-Z0-9_]+\\(" services/src/main/java/ar/edu/itba/paw/services
 ***REMOVED******REMOVED*** Controller cross-cutting concerns
 
 ***REMOVED******REMOVED******REMOVED*** Shared model attributes
-Use the anottation `@ControllerAdvice` for exposing `@ModelAttribute's across all the controllers.
 
+Use `@ControllerAdvice` to expose `@ModelAttribute` beans across controllers.
 
-***REMOVED******REMOVED*** Spring AOP annotations enabled in WebConfig
+***REMOVED******REMOVED*** Spring AOP (enabled in `WebConfig`)
 
-- `@Async` — for fire-and-forget methods (e.g., sending emails). Methods must
-  receive locale and user as arguments; do NOT access `LocaleContextHolder` or
-  `SecurityContextHolder` inside an `@Async` method (different thread).
-- `@Scheduled` — for recurring background tasks.
-- `@Cacheable` — for caching expensive computations.
+- **`@Async`**: fire-and-forget (e.g. mail). Pass locale/user as arguments; **do not** use `LocaleContextHolder` or `SecurityContextHolder` inside `@Async` (different thread).
+- **`@Scheduled`**: recurring jobs.
+- **`@Cacheable`**: cache expensive work.
 
-These work via proxies (same limitation as `@Transactional`): they only apply
-to public interface methods called from outside the class.
+Same proxy rule as `@Transactional`: only applies to **public** methods invoked from outside the bean.

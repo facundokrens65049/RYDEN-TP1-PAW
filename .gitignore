@@ -50,6 +50,9 @@ out/
 ***REMOVED*** === VS CODE ===
 .vscode/
 
+***REMOVED*** === CLAUDE ===
+.claude/
+
 ***REMOVED*** === MACOS ===
 .DS_Store
 .AppleDouble
@@ -58,6 +61,7 @@ out/
 ***REMOVED*** === OTHERS ===
 *.swp
 *~
+
 
 ***REMOVED*** === SMARTTOMCAT / generated webapp conf ===
 .smarttomcat/
