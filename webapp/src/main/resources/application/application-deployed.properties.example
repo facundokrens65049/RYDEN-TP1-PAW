@@ -1,6 +1,7 @@
 ***REMOVED*** Copy to application-deployed.properties in this directory (gitignored). Used by default (no "local" profile;
 ***REMOVED*** e.g. Tomcat on Pampero without -D, or if you do not set spring.profiles.active=local). Merged secrets + DB.
 
+
 ***REMOVED*** PostgreSQL (example host; set real values on the server)
 spring.datasource.url=***REMOVED***
 spring.datasource.username=***REMOVED***
